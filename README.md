@@ -1,6 +1,6 @@
 ## Langchain Projects
 
-This repo contains code for projects written for the Langchain course
+This repo contains code for projects written for the [Langchain course](https://www.udemy.com/course/master-langchain-pinecone-openai-build-llm-applications/)
 provided by Andela.
 
 ### Projects
