@@ -5,25 +5,29 @@ from typing import List, Optional, Tuple
 import dotenv
 import langchain
 import pinecone
+import torch
 
 Document = langchain.docstore.document.Document
 VectorStore = langchain.vectorstores.base.VST
 
 dotenv.load_dotenv()
 pinecone_api_key = os.environ.get('PINECONE_API_KEY')
-pinecone.init(api_key=pinecone_api_key, environment=pinecone_api_key)
+pinecone_environment = os.environ.get('PINECONE_ENVIRONMENT')
+pinecone.init(api_key=pinecone_api_key, environment="gcp-starter")
+
+CUDA_OR_CPU = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 embeddings = langchain.embeddings.huggingface.HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-mpnet-base-v2",
-    model_kwargs={'device': 'cuda:0'},
+    model_kwargs={'device': CUDA_OR_CPU},
     encode_kwargs={'normalize_embeddings': False}
 )
 
 llm = langchain.llms.HuggingFacePipeline.from_model_id(
     model_id="bigscience/bloom-1b7",
     task="text-generation",
-    device="0",
-    model_kwargs={"temperature": 0, "max_length": 64, "do_sample": True},
+    device=0 if CUDA_OR_CPU == "cuda:0" else -1,
+    model_kwargs={"temperature": 0.001, "max_new_tokens": 500, "do_sample": True},
 )
 
 
@@ -101,13 +105,13 @@ def insert_or_fetch_embeddings(index_name: str,
 
     if index_name in pinecone.list_indexes():
         print(f'Index {index_name} already exists. Loading embeddings ... ')
-        vector_store = langchain.vectorsrores.Pinecone.from_existing_index(
+        vector_store = langchain.vectorstores.Pinecone.from_existing_index(
             index_name, embeddings)
         print('Ok')
     else:
         print(f'Creating index {index_name} and embeddings ...')
-        pinecone.create_index(index_name, dimension=1536, metric='cosine')
-        vector_store = langchain.vectorsrores.Pinecone.from_documents(
+        pinecone.create_index(index_name, dimension=768, metric='cosine')
+        vector_store = langchain.vectorstores.Pinecone.from_documents(
             chunks, embeddings, index_name=index_name)
         print('Ok')
 

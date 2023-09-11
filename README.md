@@ -17,6 +17,26 @@ To run create a virtual environment and install the requirements:
 python3 -m venv venv
 ```
 
+Activate the virtual environment:
+
+```bash
+source venv/bin/activate
+```
+
+Install the requirements:
+
+```bash
+pip install -r requirements.txt
+```
+
+Create a `.env` file in the project directory and add the following:
+
+```bash
+PINECONE_API_KEY="your pinecone api key"
+HUGGINGFACE_TOKEN="your huggingface token"
+PINECONE_ENVIRONMENT="your pinecone environment name"
+```
+
 Then run the main.py file in the project directory:
 
 ```bash
