@@ -17,7 +17,7 @@ if __name__ == '__main__':
     chat_history = []
     print("Write `Quit` or `Exit` to quit")
     while True:
-        q = input(f"Question #{i}")
+        q = input(f"Question #{i}: ")
         i = i + 1
         if q.lower() in ["quit", "exit"]:
             print("Quitting")
