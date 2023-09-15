@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 import dotenv
 import langchain
 import pinecone
+import streamlit as st
 import torch
 
 Document = langchain.docstore.document.Document
@@ -24,10 +25,10 @@ embeddings = langchain.embeddings.huggingface.HuggingFaceEmbeddings(
 )
 
 llm = langchain.llms.HuggingFacePipeline.from_model_id(
-    model_id="bigscience/bloom-1b7",
+    model_id="mosaicml/mpt-7b-chat",
     task="text-generation",
     device=0 if CUDA_OR_CPU == "cuda:0" else -1,
-    model_kwargs={"temperature": 0.001, "max_new_tokens": 500, "do_sample": True},
+    model_kwargs={"temperature": 0.001, "max_length": 500, "do_sample": True},
 )
 
 
@@ -72,19 +73,21 @@ def load_from_wikipedia(query: str, lang: str = 'en',
 
 
 def chunk_data(data: Document,
-               chunk_size: int = 256) -> List[Document]:
+               chunk_size: int = 256, chunk_overlap: int = 20) -> List[Document]:
     """Splits a document into chunks of a given size. A chunk is a smaller
     document.
 
     Args:
         data (langchain.docstore.document.Document): The document to split.
         chunk_size (int): The size of each chunk.
+        chunk_overlap (int): The number of characters to overlap between 
+            chunks.
 
     Returns:
         A list of documents, each of which is a chunk of the original document.
     """
     text_splitter = langchain.text_splitter.RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size, chunk_overlap=0)
+        chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     return text_splitter.split_documents(data)
 
 
@@ -139,19 +142,20 @@ def delete_pinecone_index(index_name: str = 'all') -> None:
 
 
 def ask_and_get_answer(vector_store: langchain.vectorstores.Pinecone,
-                       query: str) -> str:
+                       query: str, k: int = 3) -> str:
     """Given a vector store and a query, return the answer to the query.
 
     Args:
         vector_store (langchain.vectorstores.Pinecone): The vector store to
             search for the answer.
         query (str): The query to search for the answer to.
+        k (int): The number of documents to retrieve.
 
     Returns:
         The answer to the query."""
 
     retriever = vector_store.as_retriever(
-        search_type='similarity', search_kwargs={'k': 3})
+        search_type='similarity', search_kwargs={'k': k})
 
     chain = langchain.chains.RetrievalQA.from_chain_type(
         llm=llm, chain_type="stuff", retriever=retriever)
@@ -182,3 +186,11 @@ def ask_with_memory(vector_store: langchain.vectorstores.Pinecone,
     chat_history.append((question, result['answer']))
 
     return result, chat_history
+
+# clear the chat history from streamlit session state
+
+
+def clear_history():
+    """Clears the chat history from streamlit session state."""
+    if 'history' in st.session_state:
+        del st.session_state['history']
