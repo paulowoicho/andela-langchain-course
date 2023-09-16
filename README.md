@@ -37,15 +37,8 @@ HUGGINGFACE_TOKEN="your huggingface token"
 PINECONE_ENVIRONMENT="your pinecone environment name"
 ```
 
-Then run the main.py file in the project directory (if it is a script):
+Then run the main.py file in the project directory (if it is a script) with streamlit:
 
 ```bash
-python3 main.py
-```
-
-Note: For the QA on Private Documents project, you will need to run it with
-streamlit:
-
-```bash
-streamlit run qa_on_private_documents/main.py
+streamlit run {project_name}/main.py
 ```
