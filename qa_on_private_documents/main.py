@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
                 # writing the file from RAM to the current directory on disk
                 bytes_data = uploaded_file.read()
-                file_name = os.path.join('./', uploaded_file.name)
+                file_name = os.path.join('files', uploaded_file.name)
                 with open(file_name, 'wb') as f:
                     f.write(bytes_data)
 
@@ -48,34 +48,34 @@ if __name__ == '__main__':
                 st.session_state.vs = vector_store
                 st.success('File uploaded, chunked and embedded successfully.')
         
-        # user's question text input widget
-        q = st.text_input('Ask a question about the content of your file:')
-        if q:  # if the user asked a question
-            standard_answer = ("Answer only based on the text you received as "
-                               "input. Don't search external sources. If you "
-                               "can't answer then return `I DONT KNOW`.")
-            q = f"{q} {standard_answer}"
-            if 'vs' in st.session_state:
-                vector_store = st.session_state.vs
-                st.write(f'k: {k}')
-                answer = utils.ask_and_get_answer(vector_store, q, k)
+    # user's question text input widget
+    q = st.text_input('Ask a question about the content of your file:')
+    if q:  # if the user asked a question
+        standard_answer = ("Answer only based on the text you received as "
+                            "input. Don't search external sources. If you "
+                            "can't answer then return `I DONT KNOW`.")
+        q = f"{q} {standard_answer}"
+        if 'vs' in st.session_state:
+            vector_store = st.session_state.vs
+            st.write(f'k: {k}')
+            answer = utils.ask_and_get_answer(vector_store, q, k)
 
-                # text area widget for the LLM answer
-                st.text_area('LLM Answer: ', value=answer)
+            # text area widget for the LLM answer
+            st.text_area('LLM Answer: ', value=answer)
 
-                st.divider()
+            st.divider()
 
-                # if there's no chat history in the session state, create it
-                if 'history' not in st.session_state:
-                    st.session_state.history = ''
+            # if there's no chat history in the session state, create it
+            if 'history' not in st.session_state:
+                st.session_state.history = ''
 
-                # the current question and answer
-                value = f'Q: {q} \nA: {answer}'
+            # the current question and answer
+            value = f'Q: {q} \nA: {answer}'
 
-                st.session_state.history = (
-                    f'{value} \n {"-" * 100} \n {st.session_state.history}')
-                h = st.session_state.history
+            st.session_state.history = (
+                f'{value} \n {"-" * 100} \n {st.session_state.history}')
+            h = st.session_state.history
 
-                # text area widget for the chat history
-                st.text_area(label='Chat History', value=h, key='history',
-                             height=400)
+            # text area widget for the chat history
+            st.text_area(label='Chat History', value=h, key='history',
+                            height=400)

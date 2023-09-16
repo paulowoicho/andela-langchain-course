@@ -14,6 +14,7 @@ VectorStore = langchain.vectorstores.base.VST
 dotenv.load_dotenv()
 pinecone_api_key = os.environ.get('PINECONE_API_KEY')
 pinecone_environment = os.environ.get('PINECONE_ENVIRONMENT')
+openai_api_key = os.environ.get('OPENAI_API_KEY')
 pinecone.init(api_key=pinecone_api_key, environment="gcp-starter")
 
 CUDA_OR_CPU = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -24,12 +25,9 @@ embeddings = langchain.embeddings.huggingface.HuggingFaceEmbeddings(
     encode_kwargs={'normalize_embeddings': False}
 )
 
-llm = langchain.llms.HuggingFacePipeline.from_model_id(
-    model_id="mosaicml/mpt-7b-chat",
-    task="text-generation",
-    device=0 if CUDA_OR_CPU == "cuda:0" else -1,
-    model_kwargs={"temperature": 0.001, "max_length": 500, "do_sample": True},
-)
+llm = langchain.chat_models.ChatOpenAI(model='gpt-3.5-turbo',
+                                       temperature=1,
+                                       openai_api_key=openai_api_key)
 
 
 def load_document(file: str) -> Optional[Document]:
